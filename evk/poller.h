@@ -19,9 +19,29 @@ public:
 public:
     Poller(EventLoop* loop);
     ~Poller();
+    
+    // Polls the IO events.
+    // Must be called in the loop thread.
+    Timestamp poll(int timeout_ms, ChannelList* active_channels);
+
+    // Changes the interested IO events.
+    // Must be called in the loop thread.
+    void UpdateChannel(Channel* channel);
+
+    void AssertInLoopThread() {
+        owner_loop_->AssertInLoopThread();
+    }
 
 private:
+    void FillActiveChannels(int num_events, ChannelList* active_channels);
 
+private:
+    typedef std::vector<struct pollfd> PollfdList;
+    typedef std::map<int, Channel*> ChannelMap;
+
+    EventLoop* owner_loop_;
+    PollfdList pollfd_list_;
+    ChannelMap channel_map_;
 
 };
 

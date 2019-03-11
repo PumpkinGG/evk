@@ -8,11 +8,16 @@
 #include <boost/any.hpp>
 
 #include "evk/inner_pre.h"
+#include "evk/server_status.h"
 
 namespace evk {
 class Channel;
+class Poller;
 
-class EventLoop: public noncopyable {
+// One EventLoop takes a certain thread.
+// One EventLoop ties a certain Poller with numbers of Channels.
+// One Channel ties a certain file descriptor.
+class EventLoop: public ServerStatus {
 public:
     EventLoop();
     ~EventLoop();
@@ -23,7 +28,6 @@ public:
     // Stop the event loop
     void Stop();
 
-    // Getter and Setter
 public:
     bool IsInLoopThread() const {
         return tid_ == std::this_thread::get_id();
@@ -44,8 +48,11 @@ private:
     void AbortNotInLoopThread();
 
 private:
-    std::atomic<bool> is_running_;
+    typedef std::vector<Channel*> ChannelList;
+
     const std::thread::id tid_;
+    std::unique_ptr<Poller> poller_;
+    ChannelList active_channels_;
  
 };
 

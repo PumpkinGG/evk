@@ -15,6 +15,8 @@ Channel::Channel(EventLoop* loop, int fd)
     DLOG_TRACE << "fd = " << fd;
 }
 
+Channel::~Channel() {}
+
 void Channel::Update() {
     loop_->UpdateChannel(this);
 }
@@ -34,4 +36,25 @@ void Channel::HandleEvent() {
     }
 }
 
+void Channel::EnableReadEvent() {
+    events_ |= kReadable;
+    Update();
 }
+void Channel::EnableWriteEvent() {
+    events_ |= kWritable;
+    Update();
+}
+void Channel::DisableReadEvent() {
+    events_ &= ~kReadable;
+    Update();
+}
+void Channel::DisableWriteEvent() {
+    events_ &= ~kWritable;
+    Update();
+}
+void Channel::DisableAllEvent() {
+    events_ = kNone;
+    Update();
+}
+
+} // namespace evk
