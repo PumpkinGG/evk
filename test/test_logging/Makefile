@@ -1,4 +1,5 @@
-INC = -I/usr/local/include -I ~/Coding
+BASE_PATH = ../..
+INC = -I/usr/local/include -I $(BASE_PATH)
 LIB = -L/usr/local/lib
 
 LINKFLAGS = -lglog -lpthread -Wl,-R /usr/local/lib
