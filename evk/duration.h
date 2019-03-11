@@ -11,12 +11,12 @@ namespace evk {
 // lagest representable duration to approximately 290 years.
 class Duration {
 public:
-    static const int64_t kNanosecond;
-    static const int64_t kMicrosecond;
-    static const int64_t kMillisecond;
-    static const int64_t kSecond;
-    static const int64_t kMinute;
-    static const int64_t kHour;
+    static const int64_t kNanosecond  = 1LL;
+    static const int64_t kMicrosecond = 1000 * kNanosecond;
+    static const int64_t kMillisecond = 1000 * kMicrosecond;
+    static const int64_t kSecond      = 1000 * kMillisecond;
+    static const int64_t kMinute      = 60   * kSecond;
+    static const int64_t kHour        = 60   * kMinute;
 
 public:
     Duration();

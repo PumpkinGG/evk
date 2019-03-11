@@ -1,6 +1,8 @@
 #include <vector>
+#include <map>
 
 #include "evk/inner_pre.h"
+#include "evk/timestamp.h"
 #include "evk/event_loop.h"
 
 struct pollfd;
