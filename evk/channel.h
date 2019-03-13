@@ -1,3 +1,5 @@
+#pragma once
+
 #include "evk/inner_pre.h"
 #include "evk/noncopyable.h"
 
@@ -16,6 +18,8 @@ public:
 public:
     Channel(EventLoop* loop, int fd);
     ~Channel();
+
+    void Remove();
 
 public:
     void HandleEvent();
@@ -90,5 +94,4 @@ private:
 
 };
 
-
-}
+} // namespace evk

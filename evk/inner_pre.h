@@ -9,5 +9,6 @@
 #include <functional>
 #endif // end of define __cplusplus
 
+#define GOOGLE_STRIP_LOG 0
 #include "logging.h"
 #include "noncopyable.h"

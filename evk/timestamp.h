@@ -12,6 +12,7 @@ public:
     explicit Timestamp(const struct timeval& t);
 
     static Timestamp Now();
+    static Timestamp Invalid();
 
     struct timeval TimeVal() const;
     void To(struct timeval* t) const;
@@ -27,10 +28,14 @@ public:
     // The result may be undefined if the Unix time in microseconds
     // cannot be represented by an int64.
     int64_t UnixMicro() const;
-
+    
+    // Transfom to string
+    std::string ToString() const;
+    std::string ToFormattedString(bool show_microseconds) const;
+    
     void Add(Duration d);
 
-    bool IsEpoch() const;
+    bool IsValid() const;
     bool operator< (const Timestamp& rhs) const;
     bool operator==(const Timestamp& rhs) const;
 
@@ -56,8 +61,8 @@ inline Timestamp::Timestamp(int64_t nanoseconds)
 inline Timestamp::Timestamp(const struct timeval& t)
     : ns_((int64_t)(t.tv_sec) * Duration::kSecond + t.tv_usec * Duration::kMicrosecond) {}
 
-inline bool Timestamp::IsEpoch() const {
-    return ns_ == 0;
+inline bool Timestamp::IsValid() const {
+    return ns_ > 0;
 }
 
 inline Timestamp Timestamp::Now() {
@@ -68,6 +73,10 @@ inline Timestamp Timestamp::Now() {
     return Timestamp(std::chrono::duration_cast<std::chrono::nanoseconds>
             (std::chrono::system_clock::now().time_since_epoch()).count());
 #endif
+}
+
+inline Timestamp Timestamp::Invalid() {
+    return Timestamp();
 }
 
 inline void Timestamp::Add(Duration d) {
