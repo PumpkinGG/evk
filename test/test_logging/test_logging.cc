@@ -18,9 +18,10 @@ int main(int argc, char* argv[]) {
     std::atomic<Weeks> week;
     week.store(Monday);
 
-    LOG_INFO << "This is INFO!";
-    LOG_DEBUG << "For Debug!";
-    LOG_ERROR << "For Error!";
+    LOG_INFO << "INFO!";
+    LOG_DEBUG << "Debug!";
+    LOG_ERROR << "Error!";
+    LOG_FATAL << "Fatal!";
    
     return 0;
 }

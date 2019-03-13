@@ -52,7 +52,7 @@ void resettimerfd(int timerfd, Timestamp expiration) {
     new_value.it_value = howlongtimefromnow(expiration);
     
     int ret = ::timerfd_settime(timerfd, 0, &new_value, &old_value);
-    if (ret) {
+    if (ret != 0) {
         LOG_ERROR << "timerfd_settime()";
     }
 }

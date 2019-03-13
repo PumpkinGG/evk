@@ -52,7 +52,7 @@ EventLoop::~EventLoop() {
     DLOG_TRACE;
     assert(status_.load() == kStopped);
     wakeup_channel_->DisableAllEvent();
-    wakeup_channel_->Remove();
+    // wakeup_channel_->Remove();
     loop_in_this_thread_ = nullptr;
 }
 
@@ -80,7 +80,7 @@ void EventLoop::Run() {
 
     while (status_.load() != kStopping) {
         active_channels_.clear();
-        poller_->poll(1000, &active_channels_);
+        poller_->poll(kPollTimeMs, &active_channels_);
         for (auto channel: active_channels_) {
             channel->HandleEvent();
         }
