@@ -9,6 +9,7 @@ std::string Timestamp::ToString() const {
     char buf[32] = {0};
     int64_t seconds = ns_ / Duration::kSecond;
     int64_t microseconds = (ns_ % Duration::kSecond) / Duration::kMicrosecond;
+    // PRId64 is used for compatibility of 32-bit and 64-bit os
     snprintf(buf, sizeof(buf)-1, "%" PRId64 ".%06" PRId64 "", seconds, microseconds);
     return buf;
 }

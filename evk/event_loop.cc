@@ -3,6 +3,7 @@
 #include "evk/poller.h"
 #include "evk/channel.h"
 #include "evk/timer_queue.h"
+#include "evk/socket_ops.h"
 
 #include <algorithm>
 
@@ -78,7 +79,7 @@ void EventLoop::Run() {
     // initializing
     status_.store(kRunning);
 
-    while (status_.load() != kStopping) {
+    while (status_.load() == kRunning) {
         active_channels_.clear();
         poller_->poll(kPollTimeMs, &active_channels_);
         for (auto channel: active_channels_) {
@@ -126,14 +127,15 @@ void EventLoop::RunInLoop(Functor cb) {
 }
 
 void EventLoop::QueueInLoop(Functor cb) {
-    // Critical region
+    // critical section 
     {
         std::unique_lock<std::mutex> lock(mutex_);
         pending_functors_.push_back(std::move(cb));
     }
     // If called this member function from other thread,
-    // or this thread is calling pending functors,
+    // or owner thread of this loop is calling pending functors,
     // wakeup this thread again.
+    // ** this member function is always called by other thread **
     if (!IsInLoopThread() || is_calling_pending_functors_.load()) {
         Wakeup();
     }
@@ -143,7 +145,7 @@ void EventLoop::DoPendingFunctors() {
     std::vector<Functor> functors;
     is_calling_pending_functors_.store(true);
     // @GuardedBy mutex_
-    // using swap to decrease critical region.
+    // using swap to decrease critical section
     {
         std::unique_lock<std::mutex> lock(mutex_);
         functors.swap(pending_functors_);
@@ -157,13 +159,22 @@ void EventLoop::DoPendingFunctors() {
 }
 
 void EventLoop::Wakeup() {
-    // uint64_t one = 1;
     // write something to wakeup_fd_ to wakeup this loop,
     // if it is pending on poll(2)/epoll(2) or something.
+    uint64_t one = 1;
+    ssize_t n = sock::Write(wakeup_fd_, &one, sizeof(one));
+    if (n != sizeof(one)) {
+        LOG_ERROR << "EventLoop::Wakeup() writes " << n << " bytes instead of 8";
+    }
 }
 
 void EventLoop::HandleRead() {
     // callback of Wakeup()
+    uint64_t one = 1;
+    ssize_t n = sock::Read(wakeup_fd_, &one, sizeof(one));
+    if (n != sizeof(one)) {
+        LOG_ERROR << "EventLoop::HandleRead() reads " << n << " bytes instead of 8";
+    }
 }
 
 void EventLoop::UpdateChannel(Channel* channel) {

@@ -25,8 +25,11 @@ event_loop.o: $(BASE_PATH)/evk/event_loop.cc $(BASE_PATH)/evk/event_loop.h
 poller.o: $(BASE_PATH)/evk/poller.cc $(BASE_PATH)/evk/poller.h
 	g++ $(CXXFLAGS) -c $< $(INC)
 
+socket_ops.o: $(BASE_PATH)/evk/socket_ops.cc $(BASE_PATH)/evk/socket_ops.h
+	g++ $(CXXFLAGS) -c $< $(INC)
+
 timer: test_invoke_timer.cc event_loop.o poller.o timer_queue.o \
-	channel.o invoke_timer.o timestamp.o
+	channel.o invoke_timer.o timestamp.o socket_ops.o
 	g++ $(CXXFLAGS) -o $@ $^ $(INC) $(LIB) $(LINKFLAGS)
 
 .PHONY: clean
