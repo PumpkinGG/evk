@@ -29,7 +29,10 @@ poller.o: $(SRC)/poller.cc $(SRC)/poller.h
 socket_ops.o: $(SRC)/socket_ops.cc $(SRC)/socket_ops.h
 	g++ $(CXXFLAGS) -c $<
 
-event: test_event.cc event_loop.o poller.o channel.o \
+event_loop_thread.o: $(SRC)/event_loop_thread.cc $(SRC)/event_loop_thread.h
+	g++ $(CXXFLAGS) -c $<
+
+event: test_event_loop_thread.cc event_loop_thread.o event_loop.o poller.o channel.o \
 	timer_queue.o invoke_timer.o  timestamp.o socket_ops.o
 	g++ $(CXXFLAGS) -o $@ $^ $(INC) $(LIB) $(LINKFLAGS)
 
