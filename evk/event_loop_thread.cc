@@ -51,9 +51,10 @@ void EventLoopThread::Run() {
         status_.store(kRunning);
         cond_.notify_one();
     }
+    // looping here
     event_loop_->Run();
 
-    // Stopping
+    // stopped
     assert(event_loop_->IsStopped());
     DLOG_TRACE << "loop = " << event_loop_ << " EventLoopThread stopped";
     status_.store(kStopped);
