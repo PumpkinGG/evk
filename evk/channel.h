@@ -29,6 +29,9 @@ public:
     void SetWriteCallback(const EventCallback& cb) {
         write_fn_ = cb;
     }
+    void SetCloseCallback(const EventCallback& cb) {
+        close_fn_ = cb;
+    }
     void SetErrorCallback(const EventCallback& cb) {
         error_fn_ = cb;
     }
@@ -84,6 +87,7 @@ private:
     EventCallback read_fn_;
     EventCallback write_fn_;
     EventCallback error_fn_;
+    EventCallback close_fn_;
 
     EventLoop* loop_;
     const int fd_;
@@ -91,6 +95,9 @@ private:
     int events_;
     int revents_;
     int index_; // used by poller
+    
+    bool event_handling_;
+    bool added_to_loop_; //
 
 };
 

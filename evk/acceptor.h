@@ -1,3 +1,5 @@
+#pragma once
+
 #include "evk/inner_pre.h"
 #include "evk/channel.h"
 #include "evk/socket.h"
