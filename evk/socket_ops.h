@@ -8,7 +8,7 @@ namespace sock {
 // Create a non-blocking socket file descriptor,
 // Abort if any error
 //
-int CreateNonblockingSocket();
+int CreateNonblockingSocket(sa_family_t family);
 
 int Connect(int sockfd, const struct sockaddr* addr);
 int Accept(int sockfd, struct sockaddr_in6* addr);

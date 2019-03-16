@@ -30,8 +30,8 @@ void SetNonBlockAndCloseOnExec(int sockfd) {
 
 } // namespace
 
-int CreateNonblockingSocket() {
-    int sockfd = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
+int CreateNonblockingSocket(sa_family_t family) {
+    int sockfd = ::socket(family, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
     if (sockfd < 0) {
         LOG_FATAL << "sock::CreateNonblockingSocket";
     }
