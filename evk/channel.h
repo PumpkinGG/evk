@@ -48,10 +48,10 @@ public:
     }
 
 public:
-    bool IsReadable() const {
+    bool IsReading() const {
         return (events_ & kReadable) != 0;
     }
-    bool IsWritable() const {
+    bool IsWriting() const {
         return (events_ & kWritable) != 0;
     }
     bool IsNoneEvent() const {

@@ -47,6 +47,21 @@ public:
     void SetMessageCallback(const MessageCallback& cb) {
         msg_cb_ = cb;
     }
+    void SetWriteCompleteCallback(const WriteCompleteCallback& cb) {
+        write_complete_cb_ = cb;
+    }
+    void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, 
+                                  size_t high_water_mark) {
+        high_water_mark_cb_ = cb;
+        high_water_mark_ = high_water_mark;
+    }
+
+// send    
+public:
+    void Send(const void* message, int len);
+    void Send(const Slice& message);
+    void Send(Buffer* message);
+    void Shutdown();
 
 public:
   EventLoop* GetLoop() const { 
@@ -92,6 +107,9 @@ private:
     void HandleWrite();
     void HandleClose();
     void HandleError();
+    void SendInLoop(const Slice& message);
+    void SendInLoop(const void* message, size_t len);
+    void ShutdownInLoop();
 
 private:
     EventLoop* loop_;
@@ -107,8 +125,11 @@ private:
     // callbacks
     ConnectionCallback conn_cb_;
     MessageCallback msg_cb_;
+    WriteCompleteCallback write_complete_cb_;
+    HighWaterMarkCallback high_water_mark_cb_;
     CloseCallback close_cb_;
     // buffers
+    size_t high_water_mark_;
     Buffer input_buffer_;
     Buffer output_buffer_;
 

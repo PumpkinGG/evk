@@ -20,7 +20,8 @@ TcpConnection::TcpConnection(EventLoop* loop,
       socket_(new Socket(sockfd)),
       channel_(new Channel(loop, sockfd)),
       local_addr_(local),
-      peer_addr_(peer) {
+      peer_addr_(peer),
+      high_water_mark_(64*1024*1024) {
     DLOG_TRACE << "TcpConnection::ctor[" <<  name_ << "] at " << this
                << " fd=" << sockfd;;
     channel_->SetReadCallback(
@@ -72,6 +73,32 @@ void TcpConnection::HandleRead() {
     }
 }
 
+void TcpConnection::HandleWrite() {
+    loop_->AssertInLoopThread();
+    if (channel_->IsWriting()) {
+        ssize_t n = sock::Write(channel_->fd(), 
+                                output_buffer_.data(),
+                                output_buffer_.size());
+        if (n > 0) {
+            output_buffer_.Skip(n);
+            if (output_buffer_.size() == 0) {
+                channel_->DisableWriteEvent();
+                if (write_complete_cb_) {
+                    loop_->QueueInLoop(
+                            std::bind(write_complete_cb_, shared_from_this()));
+                }
+                if (status_ == kDisconnecting) {
+                    ShutdownInLoop();
+                }
+            }
+        } else {
+            LOG_ERROR << "TcpConnection::HandleWrite";
+        }
+    } else {
+        DLOG_TRACE << channel_->fd() << " is down, no more writing";
+    }
+}
+
 void TcpConnection::HandleClose() {
     loop_->AssertInLoopThread();
     DLOG_TRACE << "fd = " << channel_->fd();
@@ -88,5 +115,103 @@ void TcpConnection::HandleError() {
               << "] - SO_ERROR = " << err;
 }
 
+void TcpConnection::Send(const void* message, int len) {
+    Send(Slice(static_cast<const char*>(message), len));
+}
+
+void TcpConnection::Send(const Slice& message) {
+    if (status_ == kConnected) {
+        if (loop_->IsInLoopThread()) {
+            SendInLoop(message);
+        } else {
+            auto cat = shared_from_this();
+            loop_->RunInLoop(
+                    [cat, &message](){
+                        cat->SendInLoop(message);
+                    });
+        }
+    }
+}
+
+void TcpConnection::Send(Buffer* message) {
+    if (status_ == kConnected) {
+        if (loop_->IsInLoopThread()) {
+            SendInLoop(message->data(), message->length());
+            message->Reset();
+        } else {
+            auto cat = shared_from_this();
+            loop_->RunInLoop(
+                    [cat, &message](){
+                        cat->SendInLoop(message->NextAll());
+                    });
+        }
+    }
+}
+
+void TcpConnection::SendInLoop(const Slice& message) {
+    SendInLoop(static_cast<const void*>(message.data()), message.size());
+}
+
+void TcpConnection::SendInLoop(const void* message, size_t len) {
+    loop_->AssertInLoopThread();
+    ssize_t nwrote = 0;
+    size_t remaining = len;
+    bool faultError = false;
+    if (status_ == kDisconnected) {
+        LOG_WARN << "kDisconnected, give up writing";
+        return;
+    }
+    // if nothing in output queue, try writing directly
+    if (!channel_->IsWriting() && output_buffer_.size() == 0) {
+        nwrote = sock::Write(channel_->fd(), message, len);
+        if (nwrote >= 0) {
+            remaining = len - nwrote;
+            if (remaining == 0 && write_complete_cb_) {
+                loop_->QueueInLoop(std::bind(write_complete_cb_, shared_from_this()));
+            }
+        } else {
+            nwrote = 0;
+            if (errno != EWOULDBLOCK) {
+                LOG_ERROR << "TcpConnection::SendInLoop";
+                if (errno == EPIPE || errno == ECONNRESET) {
+                    faultError = true;
+                }
+            }
+        }
+    }
+
+    assert(remaining <= len);
+    if (!faultError && remaining > 0) {
+        size_t oldLen = output_buffer_.size();
+        if (oldLen + remaining >= high_water_mark_
+            && oldLen < high_water_mark_
+            && high_water_mark_cb_) {
+            loop_->QueueInLoop(std::bind(high_water_mark_cb_, 
+                               shared_from_this(), oldLen+remaining));
+        }
+        // !!!message shift nwrote!!!
+        output_buffer_.Append(static_cast<const char*>(message)+nwrote, remaining);
+        if (!channel_->IsWriting()) {
+            channel_->EnableWriteEvent();
+        }
+    }
+}
+
+void TcpConnection::Shutdown() {
+    Status expected(kConnected);
+    if (status_.compare_exchange_strong(expected, kDisconnecting)) {
+        auto cat = shared_from_this();
+        loop_->RunInLoop([cat](){
+                    cat->ShutdownInLoop();
+                });
+    }
+}
+
+void TcpConnection::ShutdownInLoop() {
+    loop_->AssertInLoopThread();
+    if (!channel_->IsWriting()) {
+        socket_->ShutDownWrite();
+    }
+}
 
 } // namespace evk
