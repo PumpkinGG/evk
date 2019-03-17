@@ -71,14 +71,48 @@ void Poller::UpdateChannel(Channel* channel) {
         assert(idx >= 0 && idx < static_cast<int>(channel_map_.size()));
 
         struct pollfd& pfd = pollfd_list_[idx];
-        assert(pfd.fd == channel->fd() || pfd.fd == -1);
+        assert(pfd.fd == channel->fd() || pfd.fd == -channel->fd()-1);
         pfd.events = static_cast<short>(channel->events());
         pfd.revents = 0;
         // if do not care the events in a channel, set pfd.fd to -1.
         // then poll(2) will not listen this fd
         if (channel->IsNoneEvent()) {
-            pfd.fd = -1;
+            pfd.fd = -channel->fd()-1;
         }
+    }
+}
+
+bool Poller::HasChannel(Channel* channel) {
+    AssertInLoopThread();
+    auto it = channel_map_.find(channel->fd());
+    return it != channel_map_.end() && it->second == channel;
+}
+
+void Poller::RemoveChannel(Channel* channel) {
+    AssertInLoopThread();
+    DLOG_TRACE;
+    assert(channel_map_.find(channel->fd()) != channel_map_.end());
+    assert(channel_map_[channel->fd()] == channel);
+    assert(channel->IsNoneEvent());
+
+    int idx = channel->index();
+    assert(idx >= 0 && idx < static_cast<int>(pollfd_list_.size()));
+    const struct pollfd& pfd = pollfd_list_[idx]; (void)pfd;
+    
+    // erase channel in channel_map_
+    size_t n = channel_map_.erase(channel->fd());
+    assert(n == 1); (void)n;
+    // erase pollfd in pollfd_list_
+    if (idx == static_cast<int>(pollfd_list_.size()) - 1) {
+        pollfd_list_.pop_back();
+    } else {
+        int fdAtEnd = pollfd_list_.back().fd;
+        iter_swap(pollfd_list_.begin()+idx, pollfd_list_.end()-1);
+        if (fdAtEnd < 0) {
+            fdAtEnd = -fdAtEnd-1;
+        }
+        channel_map_[fdAtEnd]->SetIndex(idx);
+        pollfd_list_.pop_back();
     }
 }
 

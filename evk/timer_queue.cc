@@ -73,7 +73,7 @@ TimerQueue::TimerQueue(EventLoop* loop)
 
 TimerQueue::~TimerQueue() {
     timerfd_channel_.DisableAllEvent();
-    // timerfd_channel_.Remove();
+    timerfd_channel_.Remove();
     ::close(timerfd_);
     // do not remove channel, since we're in EventLoop::dtor();
     for (const Entry& timer: timers_) {

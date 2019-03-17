@@ -4,6 +4,7 @@
 #include "evk/callbacks.h"
 #include "evk/inet_address.h"
 #include "evk/slice.h"
+#include "evk/buffer.h"
 
 #include <atomic>
 #include <boost/any.hpp>
@@ -47,13 +48,34 @@ public:
         msg_cb_ = cb;
     }
 
+public:
+  EventLoop* GetLoop() const { 
+      return loop_; 
+  }
+  const std::string& Name() const { 
+      return name_; 
+  }
+  const InetAddress& LocalAddress() const { 
+      return local_addr_; 
+  }
+  const InetAddress& PeerAddress() const { 
+      return peer_addr_; 
+  }
+  bool IsConnected() const { 
+      return status_ == kConnected; 
+  }
+  bool IsDisconnected() const { 
+      return status_ == kDisconnected; 
+  }    
+
 protected:
-    friend class TCPServer;
-    friend class TCPClient;
+    friend class TcpServer;
+    friend class TcpClient;
     // these methods are visible only for TCPServer and TCPClient
     // called when TcpServer accepts a new connection
     void OnConnectEstablished();   // should be called only once
     // called when TcpServer has removed me from its map
+    // disable events in channel, then remove channel on poller
     void OnConnectDestroyed();  // should be called only once
     void SetCloseCallback(const CloseCallback& cb) {
         close_cb_ = cb;
@@ -86,6 +108,9 @@ private:
     ConnectionCallback conn_cb_;
     MessageCallback msg_cb_;
     CloseCallback close_cb_;
+    // buffers
+    Buffer input_buffer_;
+    Buffer output_buffer_;
 
 };
 

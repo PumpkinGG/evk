@@ -29,6 +29,8 @@ public:
     // Changes the interested IO events.
     // Must be called in the loop thread.
     void UpdateChannel(Channel* channel);
+    bool HasChannel(Channel* channel);
+    void RemoveChannel(Channel* channel);
 
     void AssertInLoopThread() {
         owner_loop_->AssertInLoopThread();

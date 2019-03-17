@@ -39,6 +39,54 @@ TcpConnection::~TcpConnection() {
     assert(status_ == kDisconnected);
 }
 
+void TcpConnection::OnConnectEstablished() {
+    loop_->AssertInLoopThread();
+    assert(status_ == kConnecting);
+    SetStatus(kConnected);
+    channel_->EnableReadEvent();
+    conn_cb_(shared_from_this());
+}
+
+void TcpConnection::OnConnectDestroyed() {
+    loop_->AssertInLoopThread();
+    if (status_ == kConnected) {
+        SetStatus(kDisconnected);
+        channel_->DisableAllEvent();
+        conn_cb_(shared_from_this());
+    }
+    channel_->Remove();
+}
+
+void TcpConnection::HandleRead() {
+    loop_->AssertInLoopThread();
+    int savedError = 0;
+    ssize_t n = input_buffer_.ReadFromFD(channel_->fd(), &savedError);
+    if (n > 0) {
+        msg_cb_(shared_from_this(), &input_buffer_);
+    } else if (n == 0) {
+        HandleClose();
+    } else {
+        errno = savedError;
+        LOG_ERROR << "TcpConnection::HandleRead";
+        HandleError();
+    }
+}
+
+void TcpConnection::HandleClose() {
+    loop_->AssertInLoopThread();
+    DLOG_TRACE << "fd = " << channel_->fd();
+    assert(status_ == kConnected || status_ == kDisconnecting);
+    // we don't close fd here
+    SetStatus(kDisconnected);
+    channel_->DisableAllEvent();
+    close_cb_(shared_from_this());
+}
+
+void TcpConnection::HandleError() {
+    int err = sock::GetSocketError(channel_->fd());
+    LOG_ERROR << "TcpConnection::HandleError [" << name_
+              << "] - SO_ERROR = " << err;
+}
 
 
 } // namespace evk

@@ -11,7 +11,7 @@ namespace evk {
 class Acceptor;
 class EventLoop;
 
-class TCPServer : public ServerStatus {
+class TcpServer : public ServerStatus {
 public:
     typedef std::function<void(EventLoop*)> ThreadInitCallback;
     enum Option {
@@ -20,9 +20,9 @@ public:
     };
 
 public:
-    TCPServer(EventLoop* loop, const InetAddress& listen_addr,
+    TcpServer(EventLoop* loop, const InetAddress& listen_addr,
               const std::string& name, Option option = kNoReusePort);
-    ~TCPServer();
+    ~TcpServer();
 
     // Start the server if it's not listenning
     void Start();
@@ -43,6 +43,9 @@ public:
 
 private:
     void HandleNewConnection(int sockfd, const InetAddress& peer_addr);
+    // standard usage of EventLoop::RunInLoop
+    void RemoveConnection(const TcpConnectionPtr& conn);
+    void RemoveConnectionInLoop(const TcpConnectionPtr& conn);
 
 private:
     typedef std::map<std::string, TcpConnectionPtr> ConnectionMap;

@@ -27,7 +27,7 @@ Acceptor::Acceptor(EventLoop* loop,
 
 Acceptor::~Acceptor() {
     accept_channel_.DisableAllEvent();
-    // accept_channel_.Remove();
+    accept_channel_.Remove();
     ::close(idlefd_);
 }
 

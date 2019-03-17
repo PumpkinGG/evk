@@ -183,4 +183,16 @@ void EventLoop::UpdateChannel(Channel* channel) {
     poller_->UpdateChannel(channel);
 }
 
+bool EventLoop::HasChannel(Channel* channel) {
+    assert(channel->OwnerLoop() == this);
+    AssertInLoopThread();
+    return poller_->HasChannel(channel);
+}
+
+void EventLoop::RemoveChannel(Channel* channel) {
+    assert(channel->OwnerLoop() == this);
+    AssertInLoopThread();
+    poller_->RemoveChannel(channel);
+}
+
 } // namespace evk
