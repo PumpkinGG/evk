@@ -3,17 +3,22 @@
 #include "evk/tcp_conn.h"
 #include "evk/event_loop.h"
 #include "evk/acceptor.h"
+#include "evk/event_loop_thread_pool.h"
 #include "evk/socket_ops.h"
 
 #include <stdio.h>
 
 namespace evk {
-TcpServer::TcpServer(EventLoop* loop, const InetAddress& listen_addr,
-              const std::string& name, Option option) 
+TcpServer::TcpServer(EventLoop* loop, 
+                     const InetAddress& listen_addr,
+                     const std::string& name, 
+                     int num_thread,
+                     Option option) 
     : loop_(loop),
       ip_port_(listen_addr.ToIpPort().ToString()),
       name_(name),
       acceptor_(new Acceptor(loop, listen_addr, option == kReusePort)),
+      thread_pool_(new EventLoopThreadPool(loop, name_)),
       conn_cb_(internal::DefaultConnectionCallback),
       msg_cb_(internal::DefaultMessageCallback),
       next_conn_id_(1) {
@@ -21,6 +26,8 @@ TcpServer::TcpServer(EventLoop* loop, const InetAddress& listen_addr,
     acceptor_->SetNewConnectionCallback(
             std::bind(&TcpServer::HandleNewConnection, this, 
             std::placeholders::_1, std::placeholders::_2));
+    if (num_thread < 0) num_thread = 0;
+    thread_pool_->SetThreadNum(num_thread);
     status_.store(kInitialized);
 }
 
@@ -36,8 +43,21 @@ TcpServer::~TcpServer() {
     }
 }
 
+void TcpServer::Start() {
+    DLOG_TRACE;
+    Status expected(kInitialized);
+    if (status_.compare_exchange_strong(expected, kStarting)) {
+        thread_pool_->Start();
+        assert(!acceptor_->IsListenning());
+        loop_->RunInLoop(
+                std::bind(&Acceptor::Listen, acceptor_.get()));
+        status_.store(kRunning);
+    }
+}
+
 void TcpServer::HandleNewConnection(int sockfd, const InetAddress& peer_addr) {
     loop_->AssertInLoopThread();
+    EventLoop* ioLoop = thread_pool_->GetNextLoop();
     char buf[64];
     snprintf(buf, sizeof(buf), "-%s#%d", ip_port_.c_str(), next_conn_id_);
     ++next_conn_id_;
@@ -49,7 +69,7 @@ void TcpServer::HandleNewConnection(int sockfd, const InetAddress& peer_addr) {
 
     InetAddress localAddr(sock::GetLocalAddr(sockfd));
     TcpConnectionPtr conn(
-            new TcpConnection(loop_, connName, sockfd, localAddr, peer_addr));
+            new TcpConnection(ioLoop, connName, sockfd, localAddr, peer_addr));
     connections_[connName] = conn;
     conn->SetConnectionCallback(conn_cb_);
     conn->SetMessageCallback(msg_cb_);
@@ -59,7 +79,8 @@ void TcpServer::HandleNewConnection(int sockfd, const InetAddress& peer_addr) {
     // then TcpConnection will do something(remove channel and so on) and destruct.
     conn->SetCloseCallback(
             std::bind(&TcpServer::RemoveConnection, this, std::placeholders::_1));
-    conn->OnConnectEstablished();
+    ioLoop->RunInLoop(
+            std::bind(&TcpConnection::OnConnectEstablished, conn));
 }
 
 void TcpServer::RemoveConnection(const TcpConnectionPtr& conn) {
@@ -72,7 +93,8 @@ void TcpServer::RemoveConnectionInLoop(const TcpConnectionPtr& conn) {
              << "] - connection " << conn->Name();
     size_t n = connections_.erase(conn->Name());
     assert(n == 1); (void)n;
-    loop_->QueueInLoop(std::bind(&TcpConnection::OnConnectDestroyed, conn));
+    EventLoop* ioLoop = conn->GetLoop();
+    ioLoop->QueueInLoop(std::bind(&TcpConnection::OnConnectDestroyed, conn));
 }
 
 } // namespace evk

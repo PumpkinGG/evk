@@ -28,13 +28,14 @@ dir:
 	@-mkdir -p $(LIB_DIR)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc
-	$(CXX) $(CXX_FLAGS) $(CXX_MACRO) -o $@ -c $(<)
+	$(CXX) $(CXX_FLAGS) $(CXX_MACRO) -o $@ -c $<
 
 $(LIB_DIR)/libevk.a: $(addprefix $(OBJ_DIR)/, \
 	acceptor.o buffer.o channel.o event_loop.o event_loop_thread.o \
-	inet_address.o invoke_timer.o poller.o socket.o socket_ops.o \
-	tcp_conn.o tcp_server.o timer_queue.o timestamp.o)
-	$(AR) $(AR_FLAGS) $(@) $^
+	event_loop_thread_pool.o inet_address.o invoke_timer.o poller.o \
+   	socket.o socket_ops.o tcp_conn.o tcp_server.o timer_queue.o \
+	timestamp.o)
+	$(AR) $(AR_FLAGS) $@ $^
 
 .PHONY: clean
 
