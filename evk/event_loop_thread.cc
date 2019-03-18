@@ -11,7 +11,7 @@ EventLoopThread::EventLoopThread(const InitCallback& init_cb,
 }
 
 EventLoopThread::~EventLoopThread() {
-    assert(IsRunning());
+    assert(IsStopped());
     Join();
 }
 
