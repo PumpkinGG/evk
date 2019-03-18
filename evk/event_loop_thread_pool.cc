@@ -8,18 +8,18 @@ EventLoopThreadPool::EventLoopThreadPool(EventLoop* base_loop, const std::string
       name_(name),
       num_thread_(0),
       next_(0) {
-    DLOG_TRACE << "num_thread = " << ThreadNum() << " base_loop = " << base_loop_;
+    DLOG_TRACE << " base_loop = " << base_loop_;
 }
 
 EventLoopThreadPool::~EventLoopThreadPool() {
-    DLOG_TRACE << "num_thread = " << ThreadNum();
+    DLOG_TRACE << "num_thread = " << num_thread_;
     Join();
     threads_.clear();
 }
 
 void EventLoopThreadPool::Start(const ThreadInitCallback& cb) {
     status_.store(kStarting);
-    DLOG_TRACE << "num_thread = " << ThreadNum() << " base_loop = " << base_loop_;
+    DLOG_TRACE << "num_thread = " << num_thread_ << " base_loop = " << base_loop_;
 
     for (int i = 0; i < num_thread_; i++) {
         char buf[name_.size() + 32];
@@ -82,7 +82,7 @@ void EventLoopThreadPool::Stop() {
 }
 
 void EventLoopThreadPool::Join() {
-    DLOG_TRACE << "num_thread = " << ThreadNum();
+    DLOG_TRACE << "num_thread = " << num_thread_;
     for (auto &t: threads_) {
         t->Join();
     }

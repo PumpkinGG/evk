@@ -31,9 +31,6 @@ public:
     const std::string& Name() const {
         return name_;
     }
-    int ThreadNum() const {
-        return num_thread_;
-    }
 
 private:
     EventLoop* base_loop_;
