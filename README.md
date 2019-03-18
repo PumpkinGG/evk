@@ -2,7 +2,7 @@
 * A simple C++ network library, Referring evpp & muduo
 * Based on Boost, Glog
 
-## *schdule*
+## *schedule*
 * Completed: 
    * Reactor Event Loop based on poll(2). 
       * EventLoop class for event driver loop, 
