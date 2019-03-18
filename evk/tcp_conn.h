@@ -56,6 +56,9 @@ public:
         high_water_mark_ = high_water_mark;
     }
 
+    void SetTcpNoDelay(bool on);
+    void SetKeepAlive(bool on);
+
 // send    
 public:
     void Send(const void* message, int len);

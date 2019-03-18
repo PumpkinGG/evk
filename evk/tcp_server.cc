@@ -53,6 +53,7 @@ void TcpServer::HandleNewConnection(int sockfd, const InetAddress& peer_addr) {
     connections_[connName] = conn;
     conn->SetConnectionCallback(conn_cb_);
     conn->SetMessageCallback(msg_cb_);
+    conn->SetWriteCompleteCallback(write_complete_cb_);
     // when disconnecting, 
     // need to callback TcpServer member to erase shared_ptr in map,
     // then TcpConnection will do something(remove channel and so on) and destruct.

@@ -26,6 +26,12 @@ int create_eventfd() {
     return evfd;
 }
 
+// ignore SIGPIPE
+const auto IgnoreSIGPIPE = [](){
+    ::signal(SIGPIPE, SIG_IGN);
+    return 0;
+}();
+
 } // namespace 
 
 EventLoop::EventLoop()

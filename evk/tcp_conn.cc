@@ -40,6 +40,14 @@ TcpConnection::~TcpConnection() {
     assert(status_ == kDisconnected);
 }
 
+void TcpConnection::SetTcpNoDelay(bool on) {
+    socket_->SetTcpNoDelay(on);
+}
+
+void TcpConnection::SetKeepAlive(bool on) {
+    socket_->SetKeepAlive(on);
+}
+
 void TcpConnection::OnConnectEstablished() {
     loop_->AssertInLoopThread();
     assert(status_ == kConnecting);

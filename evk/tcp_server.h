@@ -41,6 +41,11 @@ public:
         msg_cb_ = cb;
     }
 
+    // Set message callback
+    void SetWriteCompleteCallback(const WriteCompleteCallback& cb) {
+        write_complete_cb_ = cb;
+    }
+
 private:
     void HandleNewConnection(int sockfd, const InetAddress& peer_addr);
     // standard usage of EventLoop::RunInLoop
@@ -56,6 +61,7 @@ private:
     std::unique_ptr<Acceptor> acceptor_;
     ConnectionCallback conn_cb_;
     MessageCallback msg_cb_;
+    WriteCompleteCallback write_complete_cb_;
 
     // always in the loop thread
     int next_conn_id_;
