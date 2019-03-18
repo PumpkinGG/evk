@@ -26,6 +26,7 @@ Acceptor::Acceptor(EventLoop* loop,
 }
 
 Acceptor::~Acceptor() {
+    DLOG_TRACE;
     accept_channel_.DisableAllEvent();
     accept_channel_.Remove();
     ::close(idlefd_);

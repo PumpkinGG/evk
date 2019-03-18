@@ -22,6 +22,7 @@ TcpServer::TcpServer(EventLoop* loop,
       conn_cb_(internal::DefaultConnectionCallback),
       msg_cb_(internal::DefaultMessageCallback),
       next_conn_id_(1) {
+    DLOG_TRACE;
     status_.store(kInitializing);
     acceptor_->SetNewConnectionCallback(
             std::bind(&TcpServer::HandleNewConnection, this, 

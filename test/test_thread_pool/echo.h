@@ -4,7 +4,9 @@
 
 class EchoServer {
 public:
-    EchoServer(evk::EventLoop* loop, const evk::InetAddress& listener);
+    EchoServer(evk::EventLoop* loop, 
+            const evk::InetAddress& listener,
+            int num_thread = 0);
     void Start();
 
 private:

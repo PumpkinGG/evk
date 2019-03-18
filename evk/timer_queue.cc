@@ -72,6 +72,7 @@ TimerQueue::TimerQueue(EventLoop* loop)
 }
 
 TimerQueue::~TimerQueue() {
+    DLOG_TRACE;
     timerfd_channel_.DisableAllEvent();
     timerfd_channel_.Remove();
     ::close(timerfd_);

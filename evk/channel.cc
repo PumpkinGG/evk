@@ -22,6 +22,7 @@ Channel::Channel(EventLoop* loop, int fd)
 }
 
 Channel::~Channel() {
+    DLOG_TRACE;
     assert(!event_handling_);
     assert(!added_to_loop_);
 }

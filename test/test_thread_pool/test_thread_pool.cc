@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
     LOG_INFO << "pid = " << getpid();
     evk::EventLoop loop;
     evk::InetAddress listener(8848);
-    EchoServer server(&loop, listener);
+    EchoServer server(&loop, listener, 3);
 
     server.Start();
     loop.Run();

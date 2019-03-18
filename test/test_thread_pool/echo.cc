@@ -1,8 +1,9 @@
 #include "echo.h"
 
 EchoServer::EchoServer(evk::EventLoop* loop,
-                       const evk::InetAddress& listener)
-    : base_server_(loop, listener, "EchoServer") {
+                       const evk::InetAddress& listener,
+                       int num_thread)
+    : base_server_(loop, listener, "EchoServer", num_thread) {
     base_server_.SetConnectionCallback(
             std::bind(&EchoServer::OnConnection, this, 
                       std::placeholders::_1));

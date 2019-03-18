@@ -8,7 +8,7 @@ EventLoopThreadPool::EventLoopThreadPool(EventLoop* base_loop, const std::string
       name_(name),
       num_thread_(0),
       next_(0) {
-    DLOG_TRACE << "num_thread = " << ThreadNum() << "base_loop = " << base_loop_;
+    DLOG_TRACE << "num_thread = " << ThreadNum() << " base_loop = " << base_loop_;
 }
 
 EventLoopThreadPool::~EventLoopThreadPool() {
@@ -19,7 +19,7 @@ EventLoopThreadPool::~EventLoopThreadPool() {
 
 void EventLoopThreadPool::Start(const ThreadInitCallback& cb) {
     status_.store(kStarting);
-    DLOG_TRACE << "num_thread = " << ThreadNum() << "base_loop = " << base_loop_;
+    DLOG_TRACE << "num_thread = " << ThreadNum() << " base_loop = " << base_loop_;
 
     for (int i = 0; i < num_thread_; i++) {
         char buf[name_.size() + 32];
