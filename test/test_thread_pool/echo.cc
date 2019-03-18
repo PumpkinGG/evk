@@ -17,8 +17,8 @@ void EchoServer::Start() {
 }
 
 void EchoServer::OnConnection(const evk::TcpConnectionPtr& conn) {
-    LOG_INFO << "EchoServer - " << conn->PeerAddress().ToIpPort().ToString() << " -> "
-             << conn->LocalAddress().ToIpPort().ToString() << " is "
+    LOG_INFO << "EchoServer - " << conn->PeerAddress().ToIpPort() << " -> "
+             << conn->LocalAddress().ToIpPort() << " is "
              << (conn->IsConnected() ? "UP" : "DOWN");
 }
 

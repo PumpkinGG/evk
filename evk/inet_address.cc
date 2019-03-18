@@ -86,16 +86,16 @@ sa_family_t InetAddress::Family() const {
     return addr_.sin_family;
 }
 
-Slice InetAddress::ToIpPort() const {
-    char buf[64] = "";
+std::string InetAddress::ToIpPort() const {
+    char buf[64];
     sock::ToIpPort(buf, sizeof(buf), GetSockAddr());
-    return Slice(buf);
+    return std::string(buf);
 }
 
-Slice InetAddress::ToIp() const {
-    char buf[64] = "";
+std::string InetAddress::ToIp() const {
+    char buf[64];
     sock::ToIp(buf, sizeof(buf), GetSockAddr());
-    return Slice(buf);
+    return std::string(buf);
 }
 
 uint16_t InetAddress::ToPort() const {

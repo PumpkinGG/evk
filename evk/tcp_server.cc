@@ -15,7 +15,7 @@ TcpServer::TcpServer(EventLoop* loop,
                      int num_thread,
                      Option option) 
     : loop_(loop),
-      ip_port_(listen_addr.ToIpPort().ToString()),
+      ip_port_(listen_addr.ToIpPort()),
       name_(name),
       acceptor_(new Acceptor(loop, listen_addr, option == kReusePort)),
       thread_pool_(new EventLoopThreadPool(loop, name_)),
@@ -65,7 +65,7 @@ void TcpServer::HandleNewConnection(int sockfd, const InetAddress& peer_addr) {
 
     LOG_INFO << "TcpServer::HandleNewConnection [" << name_
              << "] - new connection [" << connName
-             << "] from " << peer_addr.ToIpPort().ToString();
+             << "] from " << peer_addr.ToIpPort();
 
     InetAddress localAddr(sock::GetLocalAddr(sockfd));
     TcpConnectionPtr conn(

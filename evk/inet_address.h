@@ -25,8 +25,8 @@ public:
 public:
     const struct sockaddr* GetSockAddr() const;
     sa_family_t Family() const;
-    Slice ToIpPort() const;
-    Slice ToIp() const;
+    std::string ToIpPort() const;
+    std::string ToIp() const;
     uint16_t ToPort() const;
 
     uint32_t IpNetEndian() const;
