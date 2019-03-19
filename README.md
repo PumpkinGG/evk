@@ -4,7 +4,7 @@
 
 ## *schedule*
 * Completed: 
-   * Reactor Event Loop based on ~~poll(2)~~epoll(2)&&poll(2) -> Default epoll(2). 
+   * Reactor Event Loop based on ~~poll(2)~~ epoll(2)&&poll(2) -> Default epoll(2). 
       * EventLoop class for event driver loop, 
       * Channel class ties a fixed fd, managing events and callbacks on such fd.
    * EventLoop RunInLoop method to ensure running callbacks in loop.
