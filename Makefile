@@ -33,7 +33,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc
 $(LIB_DIR)/libevk.a: $(addprefix $(OBJ_DIR)/, \
 	acceptor.o buffer.o channel.o event_loop.o event_loop_thread.o \
 	event_loop_thread_pool.o inet_address.o invoke_timer.o poller.o \
-   	socket.o socket_ops.o tcp_conn.o tcp_server.o timer_queue.o \
+   	epoller.o socket.o socket_ops.o tcp_conn.o tcp_server.o timer_queue.o \
 	timestamp.o)
 	$(AR) $(AR_FLAGS) $@ $^
 

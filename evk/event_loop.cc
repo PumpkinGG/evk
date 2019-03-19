@@ -1,6 +1,6 @@
 #include "evk/inner_pre.h"
 #include "evk/event_loop.h"
-#include "evk/poller.h"
+#include "evk/epoller.h"
 #include "evk/channel.h"
 #include "evk/timer_queue.h"
 #include "evk/socket_ops.h"
@@ -39,7 +39,7 @@ EventLoop::EventLoop()
       wakeup_fd_(create_eventfd()),
       wakeup_channel_(new Channel(this, wakeup_fd_)),
       tid_(std::this_thread::get_id()),
-      poller_(new Poller(this)),
+      poller_(new EPoller(this)),
       timer_queue_(new TimerQueue(this)) {
     DLOG_TRACE;
     if (loop_in_this_thread_) {
